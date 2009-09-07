@@ -70,7 +70,7 @@ localrenderer = StillRenderThread('localhost',scenename,context,name,frames,stat
 for frame in range(4):
 	debug('queueing frame %d' %frame)
 	frames.put(frame)
-	
+
 # start the local renderer and wait for it to end
 localrenderer.start()
 localrenderer.join()
@@ -86,14 +86,12 @@ for r in rt :
 listener.join(20.0)
 
 # display some statistics, to see if it was worth the effort
-endtime=time.time()
-partlist=NetworkRender.displaystats(stats,4,starttime,endtime)
+endtime = time.time()
+partlist = NetworkRender.displaystats(stats, 4, starttime, endtime)
 
 # try to merge to parts and show the result in the image editor
-fd,name = mkstemp(suffix='.jpg')
+fd,name = mkstemp(suffix = '.jpg')
 os.close(fd)
 NetworkRender.collate(partlist,name)
-im=Image.Load(name)
+im = Image.Load(name)
 im.makeCurrent()
-
-	

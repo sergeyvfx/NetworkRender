@@ -52,6 +52,8 @@ import NetworkRender
 NetworkRender.debugset()
 from NetworkRender import debug
 
+from NetworkRender.Configurer import Configurer
+
 class Server(SimpleXMLRPCServer):
 	"""
 	a SimpleXMLRPCServer that will stop if a global var running is set to False	(e.g. by a registered function)
@@ -60,38 +62,43 @@ class Server(SimpleXMLRPCServer):
 	and verifies that requests originate from a local (presumably secure) network.
 	
 	"""
-	
-	def __init__(self,address,handler):
-			SimpleXMLRPCServer.__init__(self,address,handler)
-			self.broadcast=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-			# Allow the socket to broadcast, set the socket options.
-			self.broadcast.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-			self.ip=socket.gethostbyname(socket.gethostname())
-			self.uri='http://'+self.ip+':8080'
-				
+
+	def __init__(self, address, handler):
+		global configurer
+
+		SimpleXMLRPCServer.__init__(self, address, handler)
+		self.broadcast = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+		# Allow the socket to broadcast, set the socket options.
+		self.broadcast.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+		self.ip = socket.gethostbyname(socket.gethostname())
+		self.uri = 'http://' + self.ip + ':' + str(configurer.get('ServerPort'))
+
 	def server_bind(self):
 		# allow fast restart of the server after it's killed
 		self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		SimpleXMLRPCServer.server_bind(self)
 
 	def broadcast_uri(self):
-			from time import sleep
-			global running
-			while running:
-				self.broadcast.sendto(self.uri,('255.255.255.255',8082))
-				sleep(5)
-	
+		from time import sleep
+		global running, configurer
+		bcast = configurer.get('ServerBCast')
+		port = configurer.get('ClientPort')
+		delay = configurer.get('ServerBCastInterval')
+		while running:
+			self.broadcast.sendto(self.uri, (bcast, port))
+			sleep(delay)
+
 	def verify_request(self, request, client_address):
 		"""
 		forbid requests except from specific client hosts
 		
 		"""
 		return NetworkRender.allowedAddress(self.ip,client_address[0])
-		
+
 	def serve_till_stopped(self):
 		global running
 		running = True
-		broadcastthread=Thread(name='broadcast', target=self.broadcast_uri)
+		broadcastthread = Thread(name = 'broadcast', target = self.broadcast_uri)
 		broadcastthread.setDaemon(True)
 		broadcastthread.start()
 		while running:
@@ -106,21 +113,21 @@ class Render(PartRenderer):
 	Besides functions to actually render something, it also provides functionality to upload a
 	.blend file and to retrieve the rendered image.
 	"""
-	
+
 	def ping(self) : 
 		"""
 		Signal existance to client.
 		
 		"""
-		
+
 		return 'I am alive'
-	
+
 	def newfile(self) :
 		"""
 		Create a temporary .blend file and open it for writing.
 		
 		This would initiate a .blend file upload from the client. Typical client code woukd be:
-			
+
 		file=open('clientsideblendfile','rb''
 		server.newfile()
 		buffer = True
@@ -130,7 +137,7 @@ class Render(PartRenderer):
 		file.close()
 		server.endfile()
 		"""
-		
+
 		from tempfile import mkstemp
 		import os
 		fd,name = mkstemp(suffix='.blend')
@@ -145,23 +152,23 @@ class Render(PartRenderer):
 		"""
 		Transfer a block of data from client to temporary serverside .blend.
 		@data: a string of binary data
-			
+
 		see newfile()
 		"""
-		
+
 		self.fd.write(str(data))
 		return 1
-	
+
 	def endfile(self) :
 		"""
 		Close temporary serverside .blend.
 		
 		see newfile()
 		"""
-		
+
 		self.fd.close()
 		return 1
-	
+
 	def renderFrame(self,scenename,frame):
 		"""
 		Render a single frame of a scene.
@@ -169,24 +176,24 @@ class Render(PartRenderer):
 		@frame: the number of the frame
 		
 		"""
-		
+
 		import bpy
 		lib = bpy.libraries.load(self.name)
 		print self.name,' loaded'
 		scn = lib.scenes.link(scenename)
 		context = scn.getRenderingContext()
-		print 'remote render start',frame
-		context.displayMode=0 #to prevent an additional render window popping up
+		print 'remote render start', frame
+		context.displayMode = 0  # to prevent an additional render window popping up
 		context.currentFrame(frame)
-		s,context.sFrame=context.sFrame,frame
-		e,context.eFrame=context.eFrame,frame    ########## remember to restore later!
+		s,context.sFrame = context.sFrame,frame
+		e,context.eFrame = context.eFrame,frame ########## remember to restore later!
 		context.renderAnim()
-		context.sFrame,context.eFrame=s,e
-		print 'remote render end frame',frame
-		self.result=context.getFrameFilename()
+		context.sFrame,context.eFrame = s,e
+		print 'remote render end frame', frame
+		self.result = context.getFrameFilename()
 		return 'render finished'
 
-	def renderPart(self,scenename,partindex, nparts):
+	def renderPart(self, scenename, partindex, nparts):
 		"""
 		Render a single part of a multipart still. 
 		@scenename: the name of the scene to render
@@ -198,31 +205,31 @@ class Render(PartRenderer):
 		See NetworkRender.PartRenderer for additonal info.
 		
 		"""
-		
+
 		import bpy
 		lib = bpy.libraries.load(self.name)
 		print self.name,' loaded'
 		scn = lib.scenes.link(scenename)
 		context = scn.getRenderingContext()
 		print 'remote render start part',partindex
-		context.displayMode=0 		#to prevent an additional render window popping up
-		
-		self._PartName(partindex,nparts)
+		context.displayMode = 0 # to prevent an additional render window popping up
+
+		self._PartName(partindex, nparts)
 		# change camera related stuff
-		self._setParam(scn,context,partindex,nparts)		
+		self._setParam(scn, context, partindex, nparts)
 		scn.update()
-		context.renderPath=self.result
-		f=context.currentFrame()
-		s,context.sFrame=context.sFrame,f
-		e,context.eFrame=context.eFrame,f    ########## remember to restore later!
-		debug('current=%d start=%d end=%d' % (f,context.sFrame,context.eFrame))
+		context.renderPath = self.result
+		f = context.currentFrame()
+		s,context.sFrame = context.sFrame,f
+		e,context.eFrame = context.eFrame,f ########## remember to restore later!
+		debug('current=%d start=%d end=%d' % (f, context.sFrame, context.eFrame))
 		debug('start render')
-		context.renderPath=self.result
-		context.renderAnim()  # because .render doesn't work in the background
-		context.sFrame,context.eFrame=s,e
-		self.result=context.getFrameFilename()
+		context.renderPath = self.result
+		context.renderAnim() # because .render doesn't work in the background
+		context.sFrame,context.eFrame = s,e
+		self.result = context.getFrameFilename()
 		self._resetParam(scn,context)
-		
+
 		print 'remote render end part',partindex
 		return 'render finished'
 
@@ -239,11 +246,11 @@ class Render(PartRenderer):
 			if len(data)<=0: break
 			else: file.write(str(data))
 		file.close()
-			
+
 		"""
-		self.fd2=open(self.result,'rb',8000)
+		self.fd2 = open(self.result, 'rb', 8000)
 		return self.result
-	
+
 	def get(self):
 		"""
 		Retrieve a block of data from a serverside rendered image.
@@ -251,20 +258,27 @@ class Render(PartRenderer):
 		
 		See getResult().
 		"""
-		
-		data=self.fd2.read(8000)
-		if len(data)<=0: self.fd2.close()
+
+		data = self.fd2.read(8000)
+
+		if len(data) <= 0:
+			self.fd2.close()
+
 		return Binary(data)
-	
-	def stop (self): global running; running = False; return 'stop requested'
 
+	def stop (self):
+		global running;
+		running = False;
+		return 'stop requested'
 
-# Instantiate and bind to localhost:8080
-server = Server(('',8080),SimpleXMLRPCRequestHandler)
- 
+configurer = Configurer()
+
+# Instantiate and bind to localhost:<ServerPort>
+server = Server(('', configurer.get('ServerPort')), SimpleXMLRPCRequestHandler)
+
 # Register example object instance
 server.register_instance(Render())
- 
+
 # run!
 server.serve_till_stopped()
 

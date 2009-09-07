@@ -25,49 +25,53 @@ from NetworkRender import debug
 import xmlrpclib,socket
 
 class RenderThread(Thread):
-	def __init__(self,uri,scenename,context,fqueue,squeue):
-                """
-                @param uri: uri of remote render server OR 'localhost'
-                @type uri: string
-                @param scenename: name of current scene
-                @type scenename: string
-                @param context: current rendering context
-                @type context: Scene.Renderdata
-                @param fqueue: worklist
-                @type fqueue: Queue.queue
-                @param squeue: rendering statistics
-                @type squeue: Queue.queue
-                """
-		Thread.__init__(self,name='thread'+uri)
+	def __init__(self, uri, scenename, context, fqueue, squeue):
+		"""
+		@param uri: uri of remote render server OR 'localhost'
+		@type uri: string
+		@param scenename: name of current scene
+		@type scenename: string
+		@param context: current rendering context
+		@type context: Scene.Renderdata
+		@param fqueue: worklist
+		@type fqueue: Queue.queue
+		@param squeue: rendering statistics
+		@type squeue: Queue.queue
+		"""
+
+		Thread.__init__(self,name = 'thread' + uri)
 		self.frames = fqueue
 		self.stats = squeue
-		
+
 	def run(self):
-                """
-                Run as long as there is work available in the workqueue.
+		"""
+		Run as long as there is work available in the workqueue.
+		
+		If an exception is caught while rendering, the workitem is put
+		back on the worklist and a statistic is recorded as a failed render.
 
-                If an exception is caught while rendering, the workitem is put
-                back on the worklist and a statistic is recorded as a failed render.
+		@warning: Note that this might end up as an endless loop if a remote server
+		continues to fail and the localhost thread is never fast enough to
+		snatch the workitem from the queue. This needs some work!
+		"""
 
-                @warning: Note that this might end up as an endless loop if a remote server
-                continues to fail and the localhost thread is never fast enough to
-                snatch the workitem from the queue. This needs some work!
-                """
-		while not self.frames.empty():       # this might not be correct, get(nonblocking) better?
+		while not self.frames.empty():  # this might not be correct, get(nonblocking) better?
 			debug('%s retrieving frame from queue' % self.uri) 
 			frame = self.frames.get()
-			ts=time.time()
+			ts = time.time()
 			debug('%s got frame %d' % (self.uri,frame))
+
 			try:
 				self.render(frame) # provided by mixin/subclass
 			except (xmlrpclib.Error,socket.error),e:
 				print 'remote exception caught',e
 				print 'requeueing frame',frame
 				self.frames.put(frame)
-				self.stats.put((self.uri,frame,te-ts,1,'none'))
+				self.stats.put((self.uri, frame, te - ts, 1, 'none'))
 				break 
-			te=time.time()
+
+			te = time.time()
 			self.frames.task_done()
-			self.stats.put((self.uri,frame,te-ts,0,self.result))
+			self.stats.put((self.uri, frame, te - ts, 0, self.result))
 		debug('%s renderthread terminated' % self.uri)
-			
+

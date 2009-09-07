@@ -28,7 +28,8 @@ class Renderer():
 	"""
 	Common functions for rendering frames and part of stills.
 	"""
-	def __init__(self,uri,scenename,context,name):
+
+	def __init__(self, uri, scenename, context, name):
 		"""
 		@param uri: uri of remote renderserver OR 'localhost'
 		@type uri: string
@@ -39,99 +40,110 @@ class Renderer():
 		@param name: filename of saved .blend file
 		@type name: string
 		"""
-		self.uri=uri
-		self.scenename=scenename
-		self.context=context
-		self.name=name
-		self.rpcserver=None
-		self.blendSent=False
-		if uri=='localhost':
-			self.blendSent=True
-			self.scn=Scene.Get(scenename)
+
+		self.uri = uri
+		self.scenename = scenename
+		self.context = context
+		self.name = name
+		self.rpcserver = None
+		self.blendSent = False
+
+		if uri == 'localhost':
+			self.blendSent = True
+			self.scn = Scene.Get(scenename)
 		else:
-			self.rpcserver=Server(uri)
+			self.rpcserver = Server(uri)
+
 		self._reset()
-		
+
 	def _reset(self):
-		self.busy=False
-		self.frame=None
-			
+		self.busy = False
+		self.frame = None
+
 	def isLocal(self):
 		"""
 		returns True if these services run on 'localhost'
 		@rtype: boolean
 		"""
-		return self.uri=='localhost'
-	
+
+		return self.uri == 'localhost'
+
 	def _sendBlendFile(self):
 		"""
 		Sent saved .blendfile if needed.
 
 		Uploads saved .blend file to remote host if not already done so.
 		"""
+
 		if self.isLocal() or self.blendSent:
 			pass
 		else:
 			self.rpcserver.newfile()
-			fd = open(self.name,'rb',8000)
-			debug('%s sending .blend: %s'%(self.uri,fd))
+			fd = open(self.name, 'rb', 8000)
+			debug('%s sending .blend: %s'%(self.uri, fd))
 			n = 0
 			buffer = True
 			while buffer :
 				buffer = fd.read(8000)
 				if buffer : 
-					r=self.rpcserver.put(Binary(buffer))
-					debug('%s put response %s' % (self.uri,r))
+					r = self.rpcserver.put(Binary(buffer))
+					debug('%s put response %s' % (self.uri, r))
 					n = n + 1
-					debug('%s %d blocks put'%(self.uri,n))
+					debug('%s %d blocks put'%(self.uri, n))
 			fd.close()
-			r=self.rpcserver.endfile()
-			debug('%s endfile called, response %s'%(self.uri,r))
-		self.blendSent=True
-	
+			r = self.rpcserver.endfile()
+			debug('%s endfile called, response %s'%(self.uri, r))
+		self.blendSent = True
+
 	def _getResult(self):
 		"""
 		Download rendered frame or part from remote server.
 		"""
-		debug('%s saving frame %d'%(self.uri,self.frame))
+
+		debug('%s saving frame %d'%(self.uri, self.frame))
 		if not self.isLocal():
-			debug('%s getting remote frame %d'%(self.uri,self.frame))
+			debug('%s getting remote frame %d'%(self.uri, self.frame))
 			rname = self.rpcserver.getResult()
+
 			from tempfile import mkstemp
 			import os
 			from os import path
+
 			remotedir,remotefile = path.split(rname)
 			if self.animation == True :
 				localdir,localfile = path.split(self.context.getFrameFilename())
 				name = path.join(localdir,remotefile)
-				
-			fd,tname = mkstemp(suffix=remotefile)
+
+			fd,tname = mkstemp(suffix = remotefile)
 			os.close(fd)
-			debug('%s saving remote frame %d as tempfile %s'%(self.uri,self.frame,tname))
-			fd=open(tname,'wb',8000)
+			debug('%s saving remote frame %d as tempfile %s'%(self.uri, self.frame, tname))
+			fd = open(tname,'wb',8000)
+
 			while True:
-				data=str(self.rpcserver.get())
-				if len(data)<=0:
+				data = str(self.rpcserver.get())
+				if len(data) <= 0:
 					fd.close()
 					break
 				else:
 					fd.write(str(data))
+
 			fd.close()
 			if self.animation == True :
-				debug('%s frame %d renaming %s to %s'%(self.uri,self.frame,tname,name))
-				if os.access(name,os.F_OK):
+				debug('%s frame %d renaming %s to %s'%(self.uri,self.frame, tname, name))
+				if os.access(name, os.F_OK):
 					os.unlink(name) # windows won't let us rename to an existing file
-				debug("%s %s exists? %s" % (self.uri,tname,os.access(tname,os.F_OK)))
+				debug("%s %s exists? %s" % (self.uri,tname, os.access(tname, os.F_OK)))
 				os.rename(tname,name)
+
 				# why all this trouble? the source file on the serverside might be on the exact same
 				# location as the file we try to write on the clientside if we run the server and the
 				# client on the same machine (as we might do for testing)
 				self.result = name
 			else :
 				self.result = tname
+
 			print 'Saved: %s (remotely rendered)'% self.result
 		else:
 			print 'Saved: %s (locally rendered)'% self.result
 			pass
 		debug('%s saving frame %d done'%(self.uri,self.frame))
-		

@@ -58,17 +58,17 @@ starttime=time.time()
 
 # start listening for remote servers
 from NetworkRender.Listener import Listener
-listener=Listener(scenename,context,name,frames,stats,AnimRenderThread)
+listener = Listener(scenename,context,name,frames,stats,AnimRenderThread)
 listener.start()
 
 # create a local renderer (we wont let others do all the dirty work :-)
-localrenderer = AnimRenderThread('localhost',scenename,context,name,frames,stats)
+localrenderer = AnimRenderThread('localhost', scenename, context, name, frames,stats)
 
 # initialize the worklist
-for frame in range(context.sFrame,context.eFrame+1):
+for frame in range(context.sFrame, context.eFrame + 1):
 	debug('queueing frame %d' %frame)
 	frames.put(frame)
-	
+
 # start the local rendere and wait for it to end	
 localrenderer.start()
 localrenderer.join()
@@ -84,5 +84,5 @@ for r in rt :
 listener.join(20.0)
 
 # display some statistics, to see if it was worth the effort
-endtime=time.time()
-NetworkRender.displaystats(stats,context.eFrame-context.sFrame+1,starttime,endtime)
+endtime = time.time()
+NetworkRender.displaystats(stats, context.eFrame - context.sFrame + 1, starttime, endtime)

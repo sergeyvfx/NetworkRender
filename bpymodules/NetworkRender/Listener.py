@@ -23,53 +23,60 @@ import NetworkRender
 NetworkRender.debugset()
 from NetworkRender import debug
 
+from NetworkRender.Configurer import Configurer
+
 class Listener(Thread):
-        """
-        Implements a listener process that listens to announcements of remote
-        renderservers and spawns a RenderThread if it detects a new one.
-        """
-	def __init__(self,scenename,context,name,fqueue,squeue,threadfactory,*args):
-                """
-                Initialize a Listener instance.
-                @param scenename: name of current scene
-                @type scenename: string
-                @param context: rendercontext of current scene
-                @type context: Blender.Renderdata
-                @param name: filename of saved .blend file
-                @type name: string
-                @param fqueue: worklist queue
-                @type fqueue: Queue.queue
-                @param squeue: statistics queue
-                @type squeue: Queue.queue
-                @param threadfactory: a classfactory to spawn worker threads
-                @type threadfactory: NetworkRender.Renderthread
-                @param args: additional arguments to be given to the threadfactory
-                """
+	"""
+	Implements a listener process that listens to announcements of remote
+	renderservers and spawns a RenderThread if it detects a new one.
+	"""
+
+	def __init__(self, scenename, context, name, fqueue, squeue, threadfactory, *args):
+		"""
+		Initialize a Listener instance.
+		@param scenename: name of current scene
+		@type scenename: string
+		@param context: rendercontext of current scene
+		@type context: Blender.Renderdata
+		@param name: filename of saved .blend file
+		@type name: string
+		@param fqueue: worklist queue
+		@type fqueue: Queue.queue
+		@param squeue: statistics queue
+		@type squeue: Queue.queue
+		@param threadfactory: a classfactory to spawn worker threads
+		@type threadfactory: NetworkRender.Renderthread
+		@param args: additional arguments to be given to the threadfactory
+		"""
+
 		Thread.__init__(self)
-		self.scenename=scenename
-		self.context=context
-		self.name=name
-		self.factory=threadfactory
+		self.scenename = scenename
+		self.context = context
+		self.name = name
+		self.factory = threadfactory
 		self.fqueue = fqueue
 		self.squeue = squeue
-		self.args=args
+		self.args = args
+		self.configurer = Configurer()
 		debug('UDPlistener starting')
-		self.socket=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)	
+		self.socket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)	
 		debug('UDPlistener socket created %s' % self.socket)
-		self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
+		self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		debug('UDPlistener options set')
-		self.ip=socket.gethostbyname(socket.gethostname())
-		self.socket.bind((self.ip,8082))
+		#self.ip = socket.gethostbyname(socket.gethostname())
+		self.ip = '0.0.0.0'
+		self.socket.bind((self.ip, self.configurer.get('ClientPort')))
 		debug('UDPlistener listening on %s'%self.socket)
-		
-	def run(self):
-                """
-                Listen and spawn new worker threads if appropriate.
 
-                Overridden from Thread. Implements a stoppable loop (stops
-                when requestStop is called on this thread) and records with
-                workerthreads were spawned.
-                """
+	def run(self):
+		"""
+		Listen and spawn new worker threads if appropriate.
+
+		Overridden from Thread. Implements a stoppable loop (stops
+		when requestStop is called on this thread) and records with
+		workerthreads were spawned.
+		"""
+
 		import time
 		uri = None
 		self.stop=False
@@ -89,18 +96,19 @@ class Listener(Thread):
 			except (socket.timeout) :
 				debug('UDPlistener received nothing, will try again')
 			finally:
-				time.sleep(5)
+				time.sleep(self.configurer.get('ServerBCastInterval'))
 		debug('UDPlistener stopped')
-			
+
 	def requestStop(self):
-                """
-                Request this thread to stop.
-                """
+		"""
+		Request this thread to stop.
+		"""
+
 		self.stop=True
-	
+
 	def getRemotethreads(self):
-                """
-                @returns: a list of previously spawned workerthreads.
-                """
+		"""
+		@returns: a list of previously spawned workerthreads.
+		"""
+
 		return self.r
-	
