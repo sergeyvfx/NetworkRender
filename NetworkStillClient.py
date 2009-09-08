@@ -49,36 +49,55 @@ from NetworkRender import debug
 from NetworkRender.StillRenderThread import StillRenderThread
 import time
 from Queue import Queue
+from NetworkRender.Configurer import Configurer
 
-frames=Queue()		# the worklist (either part- or framenumbers)
-stats=Queue()		# statistics are communicated by the renderthreads via this queue
+# Get configuration singleton and read some settings
+configurer = Configurer()
+localRendering = configurer.get('ClientLocalRendering')
+
+# the worklist (either part- or framenumbers)
+frames = Queue()
+
+# statistics are communicated by the renderthreads via this queue
+stats = Queue()
 
 # lets start!
-starttime=time.time()
+starttime = time.time()
+
 # save the current .blend
-(scn,context,scenename,name) = NetworkRender.saveblend()
+(scn, context, scenename, name) = NetworkRender.saveblend()
 
 # start listening for remote servers
 from NetworkRender.Listener import Listener
-listener=Listener(scenename,context,name,frames,stats,StillRenderThread,2)
+listener = Listener(scenename, context, name, frames, \
+				stats, StillRenderThread, 2)
 listener.start()
 
 # create a local renderer (we wont let others do all the dirty work :-)
-localrenderer = StillRenderThread('localhost',scenename,context,name,frames,stats,2)
+if localRendering:
+	localrenderer = StillRenderThread('localhost', scenename, context, \
+									name, frames, stats, 2)
 
 # initialize the worklist
 for frame in range(4):
 	debug('queueing frame %d' %frame)
 	frames.put(frame)
 
-# start the local renderer and wait for it to end
-localrenderer.start()
-localrenderer.join()
+# start the local renderer
+if localRendering:
+	localrenderer.start()
+
+# Wait for frames queue is empty (all frames are send to renderer)
+frames.join()
+
+# Wait local renderer to finish tasks
+if localRendering:
+	localrenderer.join()
 
 # wait for the remote renderers to finish and ask the listener to stop
 rt = listener.getRemotethreads();
 listener.requestStop()
-for r in rt : 
+for r in rt:
 	debug('waiting for end of thread %s'%r.getName())
 	r.join()
 

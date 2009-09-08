@@ -67,6 +67,7 @@ class RenderThread(Thread):
 				print 'remote exception caught',e
 				print 'requeueing frame',frame
 				self.frames.put(frame)
+				te = time.time()
 				self.stats.put((self.uri, frame, te - ts, 1, 'none'))
 				break 
 

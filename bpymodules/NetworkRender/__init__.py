@@ -92,12 +92,12 @@ def saveblend():
 	"""
 	Blender.PackAll()
 	from tempfile import mkstemp
-	fd,name = mkstemp(suffix='.blend')
+	fd,name = mkstemp(suffix = '.blend')
 	os.close(fd)
 	Blender.Set('compressfile',True)
 	Blender.Save(name,1)
-	scn=Scene.getCurrent()
-	scenename=scn.getName()
+	scn = Scene.getCurrent()
+	scenename = scn.getName()
 	context = scn.getRenderingContext()
 	context.displayMode=0 #to prevent an additional render window popping up
 	return (scn,context,scenename,name)
@@ -119,13 +119,13 @@ def displaystats(stats,n,starttime,endtime):
 	stats_f = defaultdict(int)
 	stats_t = defaultdict(float)
 	stats_e = defaultdict(int)
-	namelist={}
+	namelist = {}
 	while not stats.empty():
 			s = stats.get()
 			stats.task_done()
-			stats_f[s[0]]=stats_f[s[0]]+1       # tally frames
-			stats_t[s[0]]=stats_t[s[0]]+s[2]    # tally times
-			stats_e[s[0]]=stats_e[s[0]]+s[3]    # tally errorframes
+			stats_f[s[0]] = stats_f[s[0]]+1       # tally frames
+			stats_t[s[0]] = stats_t[s[0]]+s[2]    # tally times
+			stats_e[s[0]] = stats_e[s[0]]+s[3]    # tally errorframes
 			if s[3] == 0 : namelist[s[1]]=s[4]  # record filename of frame
 	te = 0.0
 	for i in stats_e : 
@@ -135,9 +135,13 @@ def displaystats(stats,n,starttime,endtime):
 	for i in stats_f :
 			print '%30s %3d/%3d %5.1f'%(i,stats_f[i],stats_e[i],stats_t[i])
 	print '%30s %3d/%3d %5.1f'%('total',n,te,endtime-starttime)
-	org = (n)*stats_t['localhost']/stats_f['localhost']
-	gain= 1.0-(endtime-starttime)/org
-	print 'done. gain is %4.1f%%'% (gain*100.0)
+
+	if stats_t['localhost'] != 0 and stats_f['localhost'] != 0:
+		org = (n) * stats_t['localhost'] / stats_f['localhost']
+		gain = 1.0 - (endtime - starttime) / org
+		print 'done. gain is %4.1f%%'% (gain * 100.0)
+	else:
+		print 'done.'
 	#print namelist
 	return [namelist[key] for key in sorted(namelist.keys())]
 
@@ -155,20 +159,20 @@ def collate(imagelist,outputfilename):
 		debug('no luck importing Python Image Library')
                 return None
 	from math import sqrt
-	nparts=len(imagelist)
-	n=int(sqrt(nparts))
+	nparts = len(imagelist)
+	n = int(sqrt(nparts))
 	debug(imagelist)
-	im=Image.open(imagelist[0])
-	size=im.size
-	im=Image.new('RGBA',(n*size[0],n*size[1]))
-	i=0             
+	im = Image.open(imagelist[0])
+	size = im.size
+	im = Image.new('RGBA', (n * size[0], n * size[1]))
+	i = 0
 	for part in imagelist:
 		debug('adding image part %d from %s' % (i,part))
-		pim=Image.open(part)
-		size=pim.size
-		dy=int(i/n)
-		dx=i%n
-		im.paste(pim,(dx*size[0],dy*size[1]))
+		pim = Image.open(part)
+		size = pim.size
+		dy = int(i/n)
+		dx = i%n
+		im.paste(pim,(dx * size[0], dy * size[1]))
 		i += 1
 
 	im.save(outputfilename)
