@@ -14,8 +14,13 @@ class Configurer():
 	class __impl():
 		def __init__(self):
 			self.variables = {}
+			self.initExtensions()
 			self.initVariables()
 			self.readRegistry()
+
+		def initExtensions(self):
+			self.extensions = {'jpeg': Blender.Scene.Render.JPEG, \
+							'png': Blender.Scene.Render.PNG}
 
 		def initVariables(self):
 			self.declareVariable('ServerPort', 8080)
@@ -24,6 +29,9 @@ class Configurer():
 
 			self.declareVariable('ClientPort', 8082)
 			self.declareVariable('ClientLocalRendering', True)
+
+			self.declareVariable('StillParts', 2)
+			self.declareVariable('OutputExtension', Blender.Scene.Render.JPEG)
 
 		def declareVariable(self, name, value):
 			self.setDrawValue(name, Draw.Create(value))
@@ -53,6 +61,22 @@ class Configurer():
 		def set(self, name, value):
 			self.variables[name].val = value
 
+		def getExtenssions(self):
+			return self.extenstions
+
+		def getFileExtension(self, ext):
+			for x in self.extensions:
+				if  self.extensions[x] == ext:
+					return x
+
+		def getMenuExtensions(self):
+			result = ''
+			for x in self.extensions:
+				if result <> '':
+					result += '|'
+				result += x + '%x' + str(self.extensions[x])
+			return result
+
 	def __init__(self):
 		if Configurer.__instance is None:
 			Configurer.__instance = Configurer.__impl()
@@ -64,3 +88,7 @@ class Configurer():
 
 	def __setattr__(self, attr, value):
 		return setattr(self.__instance, attr, value)
+
+	def destroy(self):
+		Configurer.__instance = None
+		del self.__dict__['_Configurer__instance']

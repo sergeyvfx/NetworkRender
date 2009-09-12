@@ -54,6 +54,7 @@ from NetworkRender.Configurer import Configurer
 # Get configuration singleton and read some settings
 configurer = Configurer()
 localRendering = configurer.get('ClientLocalRendering')
+parts = configurer.get('StillParts')
 
 # the worklist (either part- or framenumbers)
 frames = Queue()
@@ -70,16 +71,16 @@ starttime = time.time()
 # start listening for remote servers
 from NetworkRender.Listener import Listener
 listener = Listener(scenename, context, name, frames, \
-				stats, StillRenderThread, 2)
+				stats, StillRenderThread, parts)
 listener.start()
 
 # create a local renderer (we wont let others do all the dirty work :-)
 if localRendering:
 	localrenderer = StillRenderThread('localhost', scenename, context, \
-									name, frames, stats, 2)
+									name, frames, stats, parts)
 
 # initialize the worklist
-for frame in range(4):
+for frame in range(parts * parts):
 	debug('queueing frame %d' %frame)
 	frames.put(frame)
 
@@ -106,7 +107,7 @@ listener.join(20.0)
 
 # display some statistics, to see if it was worth the effort
 endtime = time.time()
-partlist = NetworkRender.displaystats(stats, 4, starttime, endtime)
+partlist = NetworkRender.displaystats(stats, parts * parts, starttime, endtime)
 
 # try to merge to parts and show the result in the image editor
 fd,name = mkstemp(suffix = '.jpg')
