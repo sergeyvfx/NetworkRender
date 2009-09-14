@@ -194,13 +194,14 @@ class Render(PartRenderer):
 		context.imageType = imageType
 		self.context.imageType = imageType
 		context.renderAnim()
+		self.result = context.getFrameFilename()
+
+		print 'remote render end frame', frame
 
 		# Restore changed settings
 		context.sFrame,context.eFrame = s,e
 		context.imageType = oldImagetype
 
-		print 'remote render end frame', frame
-		self.result = context.getFrameFilename()
 		return 'render finished'
 
 	def renderPart(self, scenename, partindex, nparts, imageType):
@@ -241,12 +242,12 @@ class Render(PartRenderer):
 		debug('start render')
 		context.renderPath = self.result
 		context.renderAnim() # because .render doesn't work in the background
+		self.result = context.getFrameFilename()
 
 		# Restore changed settings
 		context.sFrame,context.eFrame = s,e
 		context.imageType = oldImagetype
 
-		self.result = context.getFrameFilename()
 		self._resetParam(scn,context)
 
 		print 'remote render end part',partindex
