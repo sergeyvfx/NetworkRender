@@ -192,7 +192,6 @@ class Render(PartRenderer):
 		oldImagetype = context.imageType
 
 		context.imageType = imageType
-		self.context.imageType = imageType
 		context.renderAnim()
 		self.result = context.getFrameFilename()
 
