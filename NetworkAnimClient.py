@@ -52,7 +52,7 @@ from NetworkRender.Configurer import Configurer
 # Get configuration singleton and read some settings
 configurer = Configurer()
 localRendering = configurer.get('ClientLocalRendering')
-
+imageType = configurer.get('ImageType')
 
 # the worklist (either part- or framenumbers)
 frames = Queue()
@@ -68,13 +68,15 @@ starttime = time.time()
 
 # start listening for remote servers
 from NetworkRender.Listener import Listener
-listener = Listener(scenename,context,name,frames,stats,AnimRenderThread)
+listener = Listener(scenename, context, name, frames,
+				stats, AnimRenderThread, imageType)
 listener.start()
 
 # create a local renderer (we wont let others do all the dirty work :-)
 if localRendering:
 	localrenderer = AnimRenderThread('localhost', scenename, \
-									context, name, frames, stats)
+									context, name, frames, stats,
+									imageType)
 
 # initialize the worklist
 for frame in range(context.sFrame, context.eFrame + 1):

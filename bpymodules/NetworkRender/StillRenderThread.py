@@ -25,7 +25,8 @@ class StillRenderThread(RenderThread,Renderer,PartRenderer):
 	Still image specific functions for client side threads.
 	"""
 
-	def __init__(self, uri, scenename, context, name, fqueue, squeue, nparts):
+	def __init__(self, uri, scenename, context, name, fqueue, squeue, \
+				nparts, imageType):
 		"""
 		Initialize a StillRenderThread
 		@param uri: uri of remote render server OR 'localhost'
@@ -42,10 +43,12 @@ class StillRenderThread(RenderThread,Renderer,PartRenderer):
 		@type squeue: Queue.queue
 		@param nparts: the number of parts in either direction
 		@type nparts: int
+		@param imageType: type of output image
+		@type imageType: int
 		"""
 
 		RenderThread.__init__(self, uri, scenename, context, fqueue, squeue)
-		Renderer.__init__(self, uri, scenename, context, name)
+		Renderer.__init__(self, uri, scenename, context, name, imageType)
 		PartRenderer.__init__(self,nparts)
 
 	def _renderStill(self):
@@ -59,19 +62,30 @@ class StillRenderThread(RenderThread,Renderer,PartRenderer):
 			self.context.renderPath = self.result
 			debug('renderpath before %s'%self.context.renderPath)
 			f = self.context.currentFrame()
+
+			# remember to restore later!
 			s,self.context.sFrame = self.context.sFrame,f
-			e,self.context.eFrame = self.context.eFrame,f ########## remember to restore later!
+			e,self.context.eFrame = self.context.eFrame,f
+			oldImagetype = self.context.imageType
+
 			debug('current=%d start=%d end=%d' % (f, self.context.sFrame, self.context.eFrame))
 			debug('start render')
+
+			self.context.imageType = self.imageType
 			self.context.renderAnim() # because .render doesn't work in the background
 			self.result = self.context.getFrameFilename()
+
+			# Restore changed settings
 			self.context.sFrame,self.context.eFrame = s,e
+			self.context.imageType = oldImagetype
+
 			#self.context.saveRenderedImage(self.result, 0)
 			debug('resetparam')
 			self._resetParam(self.scn, self.context)
 			debug('renderpath after %s'%self.context.renderPath)
 		else:
-			self.rpcserver.renderPart(self.scenename, self.frame, self.nparts)
+			self.rpcserver.renderPart(self.scenename, self.frame, \
+									self.nparts, self.imageType)
 
 		debug('%s render completed for frame %d'%(self.uri, self.frame))
 

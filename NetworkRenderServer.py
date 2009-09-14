@@ -169,12 +169,12 @@ class Render(PartRenderer):
 		self.fd.close()
 		return 1
 
-	def renderFrame(self,scenename,frame):
+	def renderFrame(self, scenename, frame, imageType):
 		"""
 		Render a single frame of a scene.
 		@scenename: the name of the scene to render
 		@frame: the number of the frame
-		
+		@imageType: type of output image
 		"""
 
 		import bpy
@@ -185,25 +185,35 @@ class Render(PartRenderer):
 		print 'remote render start', frame
 		context.displayMode = 0  # to prevent an additional render window popping up
 		context.currentFrame(frame)
+
+		# remember to restore later!
 		s,context.sFrame = context.sFrame,frame
-		e,context.eFrame = context.eFrame,frame ########## remember to restore later!
+		e,context.eFrame = context.eFrame,frame
+		oldImagetype = context.imageType
+
+		context.imageType = imageType
+		self.context.imageType = imageType
 		context.renderAnim()
+
+		# Restore changed settings
 		context.sFrame,context.eFrame = s,e
+		context.imageType = oldImagetype
+
 		print 'remote render end frame', frame
 		self.result = context.getFrameFilename()
 		return 'render finished'
 
-	def renderPart(self, scenename, partindex, nparts):
+	def renderPart(self, scenename, partindex, nparts, imageType):
 		"""
 		Render a single part of a multipart still. 
 		@scenename: the name of the scene to render
 		@partindex: the partnumber to render ( 0 <= partindex < nparts^2 ) 
-		@nparts   : the number of parts a still is divided in boyh directions
-			
+		@nparts   : the number of parts a still is divided in both directions
+		@imageType: type of output image
+
 		Based on Macouno's Really Big Render ( http://www.alienhelpdesk.com/python_scripts/really_big_render )
 		Kudos to him, implementation errors are entirely mine.
-		See NetworkRender.PartRenderer for additonal info.
-		
+		See NetworkRender.PartRenderer for additional info.
 		"""
 
 		import bpy
@@ -220,13 +230,22 @@ class Render(PartRenderer):
 		scn.update()
 		context.renderPath = self.result
 		f = context.currentFrame()
+
+		# remember to restore later!
 		s,context.sFrame = context.sFrame,f
-		e,context.eFrame = context.eFrame,f ########## remember to restore later!
+		e,context.eFrame = context.eFrame,f
+		oldImagetype = context.imageType
+
+		context.imageType = imageType
 		debug('current=%d start=%d end=%d' % (f, context.sFrame, context.eFrame))
 		debug('start render')
 		context.renderPath = self.result
 		context.renderAnim() # because .render doesn't work in the background
+
+		# Restore changed settings
 		context.sFrame,context.eFrame = s,e
+		context.imageType = oldImagetype
+
 		self.result = context.getFrameFilename()
 		self._resetParam(scn,context)
 
@@ -237,7 +256,7 @@ class Render(PartRenderer):
 		"""
 		Start downloading rendered image to client.
 		@returns: the serverside name of the rendered image
-		
+
 		Typical client side code would be:
 		name = server.getResult()
 		file=open(name,'wb',8000)
@@ -246,8 +265,8 @@ class Render(PartRenderer):
 			if len(data)<=0: break
 			else: file.write(str(data))
 		file.close()
-
 		"""
+
 		self.fd2 = open(self.result, 'rb', 8000)
 		return self.result
 
@@ -255,7 +274,7 @@ class Render(PartRenderer):
 		"""
 		Retrieve a block of data from a serverside rendered image.
 		@returns: A xmlrpclib.Binary object
-		
+
 		See getResult().
 		"""
 

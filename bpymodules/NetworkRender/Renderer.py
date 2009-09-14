@@ -29,7 +29,7 @@ class Renderer():
 	Common functions for rendering frames and part of stills.
 	"""
 
-	def __init__(self, uri, scenename, context, name):
+	def __init__(self, uri, scenename, context, name, imageType):
 		"""
 		@param uri: uri of remote renderserver OR 'localhost'
 		@type uri: string
@@ -39,6 +39,8 @@ class Renderer():
 		@type context: Scene.Renderdata
 		@param name: filename of saved .blend file
 		@type name: string
+		@param imageType: type of output image
+		@type imageType: int
 		"""
 
 		self.uri = uri
@@ -47,6 +49,7 @@ class Renderer():
 		self.name = name
 		self.rpcserver = None
 		self.blendSent = False
+		self.imageType = imageType
 
 		if uri == 'localhost':
 			self.blendSent = True

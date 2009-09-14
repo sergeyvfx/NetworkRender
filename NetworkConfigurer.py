@@ -106,9 +106,9 @@ def gui():
 								"Number of parts in each direction when still rendering"))
 
 	menuname = 'Output file extension%t|' + configurer.getMenuExtensions()
-	configurer.setDrawValue('OutputExtension', \
+	configurer.setDrawValue('ImageType', \
 						Draw.Menu(menuname, No_Event, 360, 32, 160, 15, \
-								configurer.get('OutputExtension'), \
+								configurer.get('ImageType'), \
 								"Extension for output files"))
 
 	Draw.PushButton("Apply changes", Event_Save, 185, 5, 165, 15, \

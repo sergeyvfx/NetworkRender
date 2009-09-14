@@ -35,7 +35,6 @@ Security is your responsibility, not this scripts!
 Current Limitations: 
 	The resulting parts are not (yet) commposited into a single image
 	An image is (for now) always split into 2x2 parts
-
 """
 
 from tempfile import mkstemp
@@ -55,6 +54,7 @@ from NetworkRender.Configurer import Configurer
 configurer = Configurer()
 localRendering = configurer.get('ClientLocalRendering')
 parts = configurer.get('StillParts')
+imageType = configurer.get('ImageType')
 
 # the worklist (either part- or framenumbers)
 frames = Queue()
@@ -71,13 +71,13 @@ starttime = time.time()
 # start listening for remote servers
 from NetworkRender.Listener import Listener
 listener = Listener(scenename, context, name, frames, \
-				stats, StillRenderThread, parts)
+				stats, StillRenderThread, parts, imageType)
 listener.start()
 
 # create a local renderer (we wont let others do all the dirty work :-)
 if localRendering:
 	localrenderer = StillRenderThread('localhost', scenename, context, \
-									name, frames, stats, parts)
+									name, frames, stats, parts, imageType)
 
 # initialize the worklist
 for frame in range(parts * parts):
@@ -110,7 +110,8 @@ endtime = time.time()
 partlist = NetworkRender.displaystats(stats, parts * parts, starttime, endtime)
 
 # try to merge to parts and show the result in the image editor
-fd,name = mkstemp(suffix = '.jpg')
+ext = '.' + configurer.getFileExtension(imageType)
+fd,name = mkstemp(suffix = ext)
 os.close(fd)
 NetworkRender.collate(partlist,name)
 im = Image.Load(name)

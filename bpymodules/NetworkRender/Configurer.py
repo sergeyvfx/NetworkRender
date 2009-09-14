@@ -31,7 +31,7 @@ class Configurer():
 			self.declareVariable('ClientLocalRendering', True)
 
 			self.declareVariable('StillParts', 2)
-			self.declareVariable('OutputExtension', Blender.Scene.Render.JPEG)
+			self.declareVariable('ImageType', Blender.Scene.Render.JPEG)
 
 		def declareVariable(self, name, value):
 			self.setDrawValue(name, Draw.Create(value))
@@ -64,9 +64,9 @@ class Configurer():
 		def getExtenssions(self):
 			return self.extenstions
 
-		def getFileExtension(self, ext):
+		def getFileExtension(self, type):
 			for x in self.extensions:
-				if  self.extensions[x] == ext:
+				if  self.extensions[x] == type:
 					return x
 
 		def getMenuExtensions(self):
