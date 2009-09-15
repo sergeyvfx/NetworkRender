@@ -48,6 +48,8 @@ from NetworkRender.AnimRenderThread import AnimRenderThread
 import time
 from Queue import Queue
 from NetworkRender.Configurer import Configurer
+import Blender
+from Blender import Draw
 
 # Get configuration singleton and read some settings
 configurer = Configurer()
@@ -107,3 +109,5 @@ listener.join(20.0)
 # display some statistics, to see if it was worth the effort
 endtime = time.time()
 NetworkRender.displaystats(stats, context.eFrame - context.sFrame + 1, starttime, endtime)
+
+Draw.PupMenu("Animation rendering completed%t|Ok")

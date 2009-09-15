@@ -40,7 +40,8 @@ Current Limitations:
 from tempfile import mkstemp
 import os
 
-from Blender import Image
+import Blender
+from Blender import Image, Draw
 import NetworkRender
 NetworkRender.debugset()
 from NetworkRender import debug
@@ -116,3 +117,5 @@ os.close(fd)
 NetworkRender.collate(partlist,name)
 im = Image.Load(name)
 im.makeCurrent()
+
+Draw.PupMenu("Still rendering completed%t|Ok")
