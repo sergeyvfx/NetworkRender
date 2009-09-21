@@ -67,17 +67,21 @@ class StillRenderThread(RenderThread,Renderer,PartRenderer):
 			s,self.context.sFrame = self.context.sFrame,f
 			e,self.context.eFrame = self.context.eFrame,f
 			oldImagetype = self.context.imageType
+			oldWidth, oldHeight = self.context.sizeX, self.context.sizeY
 
 			debug('current=%d start=%d end=%d' % (f, self.context.sFrame, self.context.eFrame))
 			debug('start render')
 
 			self.context.imageType = self.imageType
+			self.context.sizeX /= self.nparts
+			self.context.sizeY /= self.nparts
 			self.context.renderAnim() # because .render doesn't work in the background
 			self.result = self.context.getFrameFilename()
 
 			# Restore changed settings
 			self.context.sFrame,self.context.eFrame = s,e
 			self.context.imageType = oldImagetype
+			self.context.sizeX,self.context.sizeY = oldWidth, oldHeight
 
 			#self.context.saveRenderedImage(self.result, 0)
 			debug('resetparam')

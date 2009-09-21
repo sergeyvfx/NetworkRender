@@ -235,8 +235,11 @@ class Render(PartRenderer):
 		s,context.sFrame = context.sFrame,f
 		e,context.eFrame = context.eFrame,f
 		oldImagetype = context.imageType
+		oldWidth, oldHeight = context.sizeX, context.sizeY
 
 		context.imageType = imageType
+		context.sizeX /= self.nparts
+		context.sizeY /= self.nparts
 		debug('current=%d start=%d end=%d' % (f, context.sFrame, context.eFrame))
 		debug('start render')
 		context.renderPath = self.result
@@ -246,6 +249,7 @@ class Render(PartRenderer):
 		# Restore changed settings
 		context.sFrame,context.eFrame = s,e
 		context.imageType = oldImagetype
+		context.sizeX, context.sizeY = oldWidth, oldHeight
 
 		self._resetParam(scn,context)
 
