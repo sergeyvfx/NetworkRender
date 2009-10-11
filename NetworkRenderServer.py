@@ -46,7 +46,7 @@ Current Limitations:
 import SocketServer
 from SimpleXMLRPCServer import SimpleXMLRPCServer,SimpleXMLRPCRequestHandler
 from xmlrpclib import Binary
-import socket
+import socket, sys
 from threading import Thread
 import NetworkRender
 NetworkRender.debugset()
@@ -68,10 +68,25 @@ class Server(SimpleXMLRPCServer):
 
 		SimpleXMLRPCServer.__init__(self, address, handler)
 		self.broadcast = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-		# Allow the socket to broadcast, set the socket options.
+
+		# Allow the socket to broadcast, set e socket options.
 		self.broadcast.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-		self.ip = socket.gethostbyname(socket.gethostname())
+
+		self.ip = configurer.get('ServerAddr');
+		if (self.ip == '0.0.0.0'):
+			self.ip = socket.gethostbyname(socket.gethostname())
+
 		self.uri = 'http://' + self.ip + ':' + str(configurer.get('ServerPort'))
+
+		self.staticMap = {}
+		dummyMap = configurer.get('ServerStaticMap').split(',')
+		for x in dummyMap:
+			dummy = x.split(':')
+			if (len(dummy) != 2):
+				continue
+			self.staticMap[dummy[0]] = {'serverIP': dummy[1],
+									    'serverURI': 'http://' + dummy[1] +
+									    ':' + str(configurer.get('ServerPort'))}
 
 	def server_bind(self):
 		# allow fast restart of the server after it's killed
@@ -85,13 +100,20 @@ class Server(SimpleXMLRPCServer):
 		port = configurer.get('ClientPort')
 		delay = configurer.get('ServerBCastInterval')
 		while running:
-			self.broadcast.sendto(self.uri, (bcast, port))
+			# Broadcast server's address
+			if (bcast != '0.0.0.0'):
+				self.broadcast.sendto(self.uri, (bcast, port))
+
+			# Try to send server's data to clients from static map
+			for staticClient in self.staticMap:
+				map = self.staticMap[staticClient]
+				self.broadcast.sendto(map['serverURI'], (staticClient, port))
+
 			sleep(delay)
 
 	def verify_request(self, request, client_address):
 		"""
 		forbid requests except from specific client hosts
-		
 		"""
 		return NetworkRender.allowedAddress(self.ip,client_address[0])
 

@@ -39,8 +39,10 @@ class Configurer():
 			"""
 
 			self.declareVariable('ServerPort', 8080)
+			self.declareVariable('ServerAddr', '0.0.0.0')
 			self.declareVariable('ServerBCast', '255.255.255.255')
 			self.declareVariable('ServerBCastInterval', 5)
+			self.declareVariable('ServerStaticMap', '')
 
 			self.declareVariable('ClientPort', 8082)
 			self.declareVariable('ClientLocalRendering', True)
