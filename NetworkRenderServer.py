@@ -102,11 +102,15 @@ class Server(SimpleXMLRPCServer):
 		while running:
 			# Broadcast server's address
 			if (bcast != '0.0.0.0'):
+				debug('Broadcast server URI %s to all clients on %s:%d' %
+					(self.uri, bcast, port))
 				self.broadcast.sendto(self.uri, (bcast, port))
 
 			# Try to send server's data to clients from static map
 			for staticClient in self.staticMap:
 				map = self.staticMap[staticClient]
+				debug('Send server URI %s to client %s:%d' %
+					(map['serverURI'], staticClient, port))
 				self.broadcast.sendto(map['serverURI'], (staticClient, port))
 
 			sleep(delay)
