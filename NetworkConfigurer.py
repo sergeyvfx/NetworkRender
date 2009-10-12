@@ -83,13 +83,13 @@ def gui():
 	configurer.setDrawValue('ServerBCastInterval', \
 						Draw.Number('BCast int.:', No_Event, 10, 32, 160, 15, \
 								configurer.get('ServerBCastInterval'), 0, 65535, \
-								"Interval ob broadcast clients notification"))
+								"Interval of broadcast clients notification"))
 
 	configurer.setDrawValue('ServerStaticMap', \
 						Draw.String("Static map: ", No_Event, 10, 12, 160, 15, \
 								configurer.get('ServerStaticMap'), 32, \
 								"Static client-server map" +
-								" (<client>:<server> pairs, delimited by comma)"))
+								" (<client>[:<server>] pairs, delimited by comma)"))
 
 # Client configuration
 	Blender.BGL.glColor3f(0,0,0)
