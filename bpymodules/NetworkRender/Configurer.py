@@ -43,6 +43,8 @@ class Configurer():
 			self.declareVariable('ServerBCast', '255.255.255.255')
 			self.declareVariable('ServerBCastInterval', 5)
 			self.declareVariable('ServerStaticMap', '')
+			self.declareVariable('ServerSecureNets', '')
+			self.declareVariable('ServerBufferSize', 8000)
 
 			self.declareVariable('ClientPort', 8082)
 			self.declareVariable('ClientLocalRendering', True)

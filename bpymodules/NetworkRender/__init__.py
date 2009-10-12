@@ -29,15 +29,17 @@ def allowedAddress(own,other):
 	 - in a local B-address range and shares the first 2 quads
 	 - in a local A-address range and shares the first quad
 	"""
-	a,b,c,d= own.split('.')
-	A,B,C,D= other.split('.')
-	if A=="127": return True
+	a,b,c,d = own.split('.')
+	A,B,C,D = other.split('.')
+
+	if A=="127":return True
 	elif a=="192" and b=="168":
 		if a==A and b==B and c==C: return True
 	elif a=="172" and int(b)>=16 and int(b)<=31:
 		if a==A and b==B: return True
 	elif a=="10":
 		if a==A: return True
+
 	return False
 
 import Blender

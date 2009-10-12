@@ -106,7 +106,7 @@ class Server(SimpleXMLRPCServer):
 		delay = configurer.get('ServerBCastInterval')
 		while running:
 			# Broadcast server's address
-			if (bcast != '0.0.0.0'):
+			if (bcast != ''):
 				debug('Broadcast server URI %s to all clients on %s:%d' %
 					(self.uri, bcast, port))
 				self.broadcast.sendto(self.uri, (bcast, port))
@@ -171,10 +171,12 @@ class Render(PartRenderer):
 
 		from tempfile import mkstemp
 		import os
+		global configurer
+
 		fd,name = mkstemp(suffix='.blend')
 		os.close(fd)
 		self.name = name
-		fd = open(name,'wb',8000)
+		fd = open(name,'wb', configurer.get('ServerBufferSize'))
 		self.fd = fd
 		print name
 		return 1
@@ -302,7 +304,10 @@ class Render(PartRenderer):
 		file.close()
 		"""
 
-		self.fd2 = open(self.result, 'rb', 8000)
+		global configurer
+
+		self.fd2 = open(self.result, 'rb',
+					configurer.get('ServerBufferSize'))
 		return self.result
 
 	def get(self):
@@ -313,7 +318,9 @@ class Render(PartRenderer):
 		See getResult().
 		"""
 
-		data = self.fd2.read(8000)
+		global configurer
+
+		data = self.fd2.read(configurer.get('ServerBufferSize'))
 
 		if len(data) <= 0:
 			self.fd2.close()
@@ -328,7 +335,8 @@ class Render(PartRenderer):
 configurer = Configurer()
 
 # Instantiate and bind to localhost:<ServerPort>
-server = Server(('', configurer.get('ServerPort')), SimpleXMLRPCRequestHandler)
+server = Server(('0.0.0.0', configurer.get('ServerPort')),
+			SimpleXMLRPCRequestHandler)
 
 # Register example object instance
 server.register_instance(Render())

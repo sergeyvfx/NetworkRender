@@ -24,6 +24,8 @@ import NetworkRender
 NetworkRender.debugset()
 from NetworkRender import debug
 
+from NetworkRender.Configurer import Configurer
+
 class Renderer():
 	"""
 	Common functions for rendering frames and part of stills.
@@ -43,6 +45,7 @@ class Renderer():
 		@type imageType: int
 		"""
 
+		self.configurer = Configurer()
 		self.uri = uri
 		self.scenename = scenename
 		self.context = context
@@ -82,12 +85,12 @@ class Renderer():
 			pass
 		else:
 			self.rpcserver.newfile()
-			fd = open(self.name, 'rb', 8000)
+			fd = open(self.name, 'rb', self.configurer.get('ServerBufferSize'))
 			debug('%s sending .blend: %s'%(self.uri, fd))
 			n = 0
 			buffer = True
 			while buffer :
-				buffer = fd.read(8000)
+				buffer = fd.read(self.configurer.get('ServerBufferSize'))
 				if buffer : 
 					r = self.rpcserver.put(Binary(buffer))
 					debug('%s put response %s' % (self.uri, r))
@@ -120,7 +123,7 @@ class Renderer():
 			fd,tname = mkstemp(suffix = remotefile)
 			os.close(fd)
 			debug('%s saving remote frame %d as tempfile %s'%(self.uri, self.frame, tname))
-			fd = open(tname,'wb',8000)
+			fd = open(tname,'wb',self.configurer.get('ServerBufferSize'))
 
 			while True:
 				data = str(self.rpcserver.get())
