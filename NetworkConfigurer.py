@@ -97,8 +97,8 @@ def gui():
 	Blender.Draw.Text("Client")
 	Blender.BGL.glBegin(Blender.BGL.GL_LINE_STRIP)
 	Blender.BGL.glVertex2i(185, 114)
-	Blender.BGL.glVertex2i(185, 65)
-	Blender.BGL.glVertex2i(525, 65)
+	Blender.BGL.glVertex2i(185, 45)
+	Blender.BGL.glVertex2i(525, 45)
 	Blender.BGL.glVertex2i(525, 114)
 	Blender.BGL.glVertex2i(225, 114)
 	Blender.BGL.glEnd()
@@ -123,11 +123,17 @@ def gui():
 								configurer.get('ImageType'), \
 								"Extension for output files"))
 
+	configurer.setDrawValue('ClientServerList', \
+						Draw.String("Servers: ", No_Event, 190, 52, 330, 15, \
+								configurer.get('ClientServerList'), 32, \
+								"List of servers to use" +
+								" (<server>[:<port>] pairs, delimited by comma)"))
 
-	Draw.PushButton("Apply changes", Event_Save, 185, 5, 165, 35, \
+
+	Draw.PushButton("Apply changes", Event_Save, 185, 5, 165, 30, \
 				"Apply changes of NetworkRender configuration")
 
-	Draw.PushButton("Quit", Event_Close, 360, 5, 165, 35, \
+	Draw.PushButton("Quit", Event_Close, 360, 5, 165, 30, \
 				"Quit from NetworkRender configuration script")
 
 Draw.Register(gui, event, bevent)

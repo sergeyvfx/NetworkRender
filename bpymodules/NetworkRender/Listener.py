@@ -68,6 +68,16 @@ class Listener(Thread):
 		self.socket.bind((self.ip, self.configurer.get('ClientPort')))
 		debug('UDPlistener listening on %s'%self.socket)
 
+	def registerNode(self, uri):
+#		if (self.uriMap.get(uri) == None):
+		debug('spawning new thread for %s' % uri)
+		rt = self.factory(uri, self.scenename, self.context,
+						self.name, self.fqueue,
+						self.squeue,*self.args)
+		self.r.append(rt)
+		self.uriMap[uri] = True
+		rt.start()
+
 	def run(self):
 		"""
 		Listen and spawn new worker threads if appropriate.
@@ -78,21 +88,27 @@ class Listener(Thread):
 		"""
 
 		import time
-		uri = None
-		self.stop=False
+		self.stop = False
 		self.r = []
+		self.uriMap = {}
+
+		# Register static list of server
+		servers = self.configurer.get('ClientServerList').split(',')
+		for server in servers:
+			if (server == ''):
+				continue
+			serverData = server.split(':')
+			if (len (serverData) == 1):
+				serverData.append(str(self.configurer.get('ServerPort')))
+			self.registerNode('http://' + serverData[0] + ':' + serverData[1])
+
 		while not self.stop:
 			debug('UDPlistener ready for request on %s,%s' % self.socket.getsockname())
 			try:
-				self.socket.settimeout(12)
+				self.socket.settimeout(5)
 				data, addr = self.socket.recvfrom(512)
-				debug('UDPlistener received request: %s from %s'%(data,addr))
-				if data != uri :
-					uri = data
-					debug('spawning new thread for %s'%uri)
-					rt=self.factory(uri,self.scenename,self.context,self.name,self.fqueue,self.squeue,*self.args)
-					self.r.append(rt)
-					rt.start()
+				debug('UDPlistener received request: %s from %s' % (data, addr))
+				self.registerNode(data)
 			except (socket.timeout) :
 				debug('UDPlistener received nothing, will try again')
 			finally:

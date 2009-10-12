@@ -69,6 +69,11 @@ starttime = time.time()
 # save the current .blend
 (scn, context, scenename, name) = NetworkRender.saveblend()
 
+# initialize the worklist
+for frame in range(parts * parts):
+	debug('queueing frame %d' %frame)
+	frames.put(frame)
+
 # start listening for remote servers
 from NetworkRender.Listener import Listener
 listener = Listener(scenename, context, name, frames, \
@@ -79,11 +84,6 @@ listener.start()
 if localRendering:
 	localrenderer = StillRenderThread('localhost', scenename, context, \
 									name, frames, stats, parts, imageType)
-
-# initialize the worklist
-for frame in range(parts * parts):
-	debug('queueing frame %d' %frame)
-	frames.put(frame)
 
 # start the local renderer
 if localRendering:

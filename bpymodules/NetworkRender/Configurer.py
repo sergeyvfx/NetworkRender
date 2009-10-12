@@ -46,6 +46,7 @@ class Configurer():
 
 			self.declareVariable('ClientPort', 8082)
 			self.declareVariable('ClientLocalRendering', True)
+			self.declareVariable('ClientServerList', '')
 
 			self.declareVariable('StillParts', 2)
 			self.declareVariable('ImageType', Blender.Scene.Render.JPEG)
