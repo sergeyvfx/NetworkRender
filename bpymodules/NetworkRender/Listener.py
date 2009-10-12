@@ -69,14 +69,14 @@ class Listener(Thread):
 		debug('UDPlistener listening on %s'%self.socket)
 
 	def registerNode(self, uri):
-#		if (self.uriMap.get(uri) == None):
-		debug('spawning new thread for %s' % uri)
-		rt = self.factory(uri, self.scenename, self.context,
-						self.name, self.fqueue,
-						self.squeue,*self.args)
-		self.r.append(rt)
-		self.uriMap[uri] = True
-		rt.start()
+		if (self.uriMap.get(uri) == None):
+			debug('spawning new thread for %s' % uri)
+			rt = self.factory(uri, self.scenename, self.context,
+							self.name, self.fqueue,
+							self.squeue,*self.args)
+			self.r.append(rt)
+			self.uriMap[uri] = True
+			rt.start()
 
 	def run(self):
 		"""
