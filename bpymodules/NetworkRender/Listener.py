@@ -100,7 +100,8 @@ class Listener(Thread):
 			serverData = server.split(':')
 			if (len (serverData) == 1):
 				serverData.append(str(self.configurer.get('ServerPort')))
-			self.registerNode('http://' + serverData[0] + ':' + serverData[1])
+			self.registerNode('http://' + serverData[0].strip() + ':' +
+							serverData[1].strip())
 
 		while not self.stop:
 			debug('UDPlistener ready for request on %s,%s' % self.socket.getsockname())

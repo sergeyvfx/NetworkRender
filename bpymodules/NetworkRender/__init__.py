@@ -16,7 +16,43 @@ __history__  =['1.00 2008-10-20, code refactoring and documentation update',
 			   '0.01 2008-10-6 initital version'
 			   ]
 
-def allowedAddress(own,other):
+def decodeIP(ipData):
+	return int(ipData[3]) + (int(ipData[2]) << 8) + \
+		(int(ipData[1]) << 16) + (int(ipData[0]) << 24)
+
+def isIPInNetwork(ip, network):
+	data = network.split('/')
+	ipData = ip.split('.')
+
+	if (len(data) != 2):
+		return False
+
+	netAddr = data[0]
+	width = int(data[1])
+
+	ip = decodeIP(ipData)
+	net = decodeIP(netAddr.split('.'))
+
+	netmask = 0
+	d = 1 << 31
+	i = 32
+
+	for x in range(width):
+		netmask |= d
+		d >>= 1
+
+	return (net & netmask) == (ip & netmask)
+
+def isIPInNetworks(ip, networks):
+	networkList = networks.split(',')
+
+	for network in networkList:
+		if (isIPInNetwork(ip, network.strip ())):
+			return True
+
+	return False
+
+def allowedAddress(own, other, secureNets = None):
 	"""
 	Check whether two ip addresses are local to eachother.
 	@param own: ip-address as dotted quad, i.e. 1.2.3.4
@@ -39,6 +75,10 @@ def allowedAddress(own,other):
 		if a==A and b==B: return True
 	elif a=="10":
 		if a==A: return True
+
+	if (secureNets != None):
+		if (isIPInNetworks (other, secureNets)):
+			return True
 
 	return False
 
