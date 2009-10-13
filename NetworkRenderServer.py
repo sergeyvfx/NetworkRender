@@ -79,8 +79,16 @@ class Server(SimpleXMLRPCServer):
 		self.uri = 'http://' + self.ip + ':' + str(configurer.get('ServerPort'))
 
 		self.staticMap = {}
-		dummyMap = configurer.get('ServerStaticMap').split(',')
+		sMap = configurer.get('ServerStaticMap')
+
+		debug('Parsing static server string specification "%s"...' % (sMap))
+
+		dummyMap = sMap.split(',')
 		for x in dummyMap:
+			if (x.strip() == ''):
+				continue
+
+			debug('Parsing static server data "%s"...' % (x))
 			dummy = x.split(':')
 
 			if (len(dummy) == 1):
