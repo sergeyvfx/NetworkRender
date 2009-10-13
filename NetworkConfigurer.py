@@ -78,7 +78,8 @@ def gui():
 	configurer.setDrawValue('ServerBCast', \
 						Draw.String("BCast addr: ", No_Event, 10, 72, 160, 15, \
 								configurer.get('ServerBCast'), 32, \
-								"IP address for broadcast messages"))
+								"IP address for broadcast messages" +
+								" (leave blank to disable broadcasting)"))
 
 	configurer.setDrawValue('ServerBCastInterval', \
 						Draw.Number('BCast int.:', No_Event, 180, 72, 160, 15, \
@@ -88,7 +89,8 @@ def gui():
 	configurer.setDrawValue('ServerSecureNets', \
 						Draw.String("Secure nets: ", No_Event, 10, 52, 330, 15, \
 								configurer.get('ServerSecureNets'), 250, \
-								"Comma separated list of secure networks"))
+								"Comma separated list of secure networks" +
+								" (in format like 192.168.0.0/16)"))
 
 	configurer.setDrawValue('ServerStaticMap', \
 						Draw.String("Static map: ", No_Event, 10, 32, 330, 15, \
@@ -98,7 +100,7 @@ def gui():
 
 	configurer.setDrawValue('ServerBufferSize', \
 						Draw.Number("Buffer size: ", No_Event, 10, 12, 330, 15, \
-								configurer.get('ServerBufferSize'), 1024, 65535, \
+								configurer.get('ServerBufferSize'), 1024, 524288, \
 								"Size of buffer to send data between server and client"))
 
 # Client configuration

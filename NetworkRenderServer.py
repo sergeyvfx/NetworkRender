@@ -97,8 +97,9 @@ class Server(SimpleXMLRPCServer):
 			if (len(dummy) != 2):
 				continue
 
-			self.staticMap[dummy[0]] = {'serverIP': dummy[1],
-									    'serverURI': 'http://' + dummy[1] +
+			self.staticMap[dummy[0]] = {'serverIP': dummy[1].strip(),
+									    'serverURI': 'http://' +
+									    dummy[1].strip() +
 									    ':' + str(configurer.get('ServerPort'))}
 
 	def server_bind(self):
@@ -132,7 +133,11 @@ class Server(SimpleXMLRPCServer):
 		"""
 		forbid requests except from specific client hosts
 		"""
-		return NetworkRender.allowedAddress(self.ip,client_address[0])
+
+		global configurer
+
+		return NetworkRender.allowedAddress(self.ip, client_address[0],
+										configurer.get('ServerSecureNets'))
 
 	def serve_till_stopped(self):
 		global running
