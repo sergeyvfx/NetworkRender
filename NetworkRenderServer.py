@@ -43,16 +43,15 @@ Current Limitations:
 """
 
 
-import SocketServer
-from SimpleXMLRPCServer import SimpleXMLRPCServer,SimpleXMLRPCRequestHandler
+import SocketServer, socket, sys, NetworkRender
+
+from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from xmlrpclib import Binary
-import socket, sys
 from threading import Thread
-import NetworkRender
+from NetworkRender.Configurer import Configurer
+
 NetworkRender.debugset()
 from NetworkRender import debug
-
-from NetworkRender.Configurer import Configurer
 
 class Server(SimpleXMLRPCServer):
 	"""

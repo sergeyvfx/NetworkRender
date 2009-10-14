@@ -15,14 +15,12 @@ __version__  ='1.00 2008-10-20'
 __history__  =['1.00 2008-10-20, initial version'
                 ]
 
-import time
+import time, xmlrpclib, socket, NetworkRender
+
 from threading import Thread
 
-import NetworkRender
 NetworkRender.debugset()
 from NetworkRender import debug
-
-import xmlrpclib,socket
 
 class RenderThread(Thread):
 	def __init__(self, uri, scenename, context, fqueue, squeue):
@@ -42,6 +40,17 @@ class RenderThread(Thread):
 		Thread.__init__(self,name = 'thread' + uri)
 		self.frames = fqueue
 		self.stats = squeue
+		self.failure = False
+		self.stop = False
+
+	def requestStop(self):
+		this.stop = True
+
+	def serviceAlive(self):
+		"""
+		Check if queue servicing is alive or finished it successfully
+		"""
+		return rt.isAlive() or not rt.failure
 
 	def run(self):
 		"""
@@ -55,7 +64,8 @@ class RenderThread(Thread):
 		snatch the workitem from the queue. This needs some work!
 		"""
 
-		while not self.frames.empty():  # this might not be correct, get(nonblocking) better?
+		# this might not be correct, get(nonblocking) better?
+		while not self.stop and not self.frames.empty():
 			debug('%s retrieving frame from queue' % self.uri) 
 			frame = self.frames.get()
 			ts = time.time()
@@ -63,12 +73,13 @@ class RenderThread(Thread):
 
 			try:
 				self.render(frame) # provided by mixin/subclass
-			except (xmlrpclib.Error,socket.error),e:
+			except (xmlrpclib.Error, socket.error),e:
 				print 'remote exception caught',e
 				print 'requeueing frame',frame
 				self.frames.put(frame)
 				te = time.time()
 				self.stats.put((self.uri, frame, te - ts, 1, 'none'))
+				self.failure = True
 				break 
 
 			te = time.time()

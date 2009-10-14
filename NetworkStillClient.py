@@ -37,19 +37,16 @@ Current Limitations:
 	An image is (for now) always split into 2x2 parts
 """
 
-from tempfile import mkstemp
-import os
+import os, Blender, NetworkRender, time
 
-import Blender
+from tempfile import mkstemp
+from Queue import Queue
 from Blender import Image, Draw
-import NetworkRender
+from NetworkRender.StillRenderThread import StillRenderThread
+from NetworkRender.Configurer import Configurer
+
 NetworkRender.debugset()
 from NetworkRender import debug
-
-from NetworkRender.StillRenderThread import StillRenderThread
-import time
-from Queue import Queue
-from NetworkRender.Configurer import Configurer
 
 # Get configuration singleton and read some settings
 configurer = Configurer()

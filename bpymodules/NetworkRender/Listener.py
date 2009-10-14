@@ -16,14 +16,13 @@ __history__  =['0.01 2008-10-09, initial version',
                '1.00 2008-10-20, code refactoring'
                ]
 
-from threading import Thread
-import socket
+import socket, NetworkRender
 
-import NetworkRender
+from threading import Thread
+from NetworkRender.Configurer import Configurer
+
 NetworkRender.debugset()
 from NetworkRender import debug
-
-from NetworkRender.Configurer import Configurer
 
 class Listener(Thread):
 	"""
@@ -68,14 +67,40 @@ class Listener(Thread):
 		self.socket.bind((self.ip, self.configurer.get('ClientPort')))
 		debug('UDPlistener listening on %s'%self.socket)
 
+	def reusable(self, uri):
+		nodeData = self.uriMap.get(uri)
+
+		rt = nodeData['renderThread']
+
+		# Check is thread still alive and not failed
+		if (not rt.serviceAlive()):
+			# Thread is not alive because of remote server caught an
+			# unhandled exception. But is this case remote server freezes.
+			# So, a ping pocket from this server means this server is restarted
+			# and we could reuse this thread
+
+			# It would be safer to manually request stopping of thread
+			rt.requestStop()
+
+			debug('node uri %s caught a failure, but send a ping pocket again.')
+
+			return True
+
+		return False
+
 	def registerNode(self, uri):
-		if (self.uriMap.get(uri) == None):
+		"""
+		Register rendering node
+		"""
+
+		nodeData = self.uriMap.get(uri)
+		if (nodeData == None or self.reusable(uri)):
 			debug('spawning new thread for %s' % uri)
 			rt = self.factory(uri, self.scenename, self.context,
 							self.name, self.fqueue,
 							self.squeue,*self.args)
 			self.r.append(rt)
-			self.uriMap[uri] = True
+			self.uriMap[uri] = {'renderThread': rt}
 			rt.start()
 
 	def run(self):
@@ -121,7 +146,7 @@ class Listener(Thread):
 		Request this thread to stop.
 		"""
 
-		self.stop=True
+		self.stop = True
 
 	def getRemotethreads(self):
 		"""

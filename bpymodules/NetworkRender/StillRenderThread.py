@@ -13,14 +13,16 @@ __email__    =['varkenvarken is my nick at blendernation.org, PM me there']
 __version__  ='1.00 2008-10-20'
 __history__  =['1.00 2008-10-20, initial version'
                 ]
+import NetworkRender
+
 from NetworkRender.PartRenderer import PartRenderer
 from NetworkRender.RenderThread import RenderThread
 from NetworkRender.Renderer import Renderer
-import NetworkRender
+
 NetworkRender.debugset()
 from NetworkRender import debug
 
-class StillRenderThread(RenderThread,Renderer,PartRenderer):
+class StillRenderThread(Renderer, PartRenderer):
 	"""
 	Still image specific functions for client side threads.
 	"""
@@ -47,8 +49,8 @@ class StillRenderThread(RenderThread,Renderer,PartRenderer):
 		@type imageType: int
 		"""
 
-		RenderThread.__init__(self, uri, scenename, context, fqueue, squeue)
-		Renderer.__init__(self, uri, scenename, context, name, imageType)
+		Renderer.__init__(self, uri, scenename, context, name,
+						fqueue, squeue, imageType)
 		PartRenderer.__init__(self,nparts)
 
 	def _renderStill(self):

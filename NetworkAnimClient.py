@@ -40,16 +40,15 @@ Current Limitations:
         directly as an .avi 
 """
 
-import NetworkRender
-NetworkRender.debugset()
-from NetworkRender import debug
+import time, Blender, NetworkRender
 
 from NetworkRender.AnimRenderThread import AnimRenderThread
-import time
 from Queue import Queue
 from NetworkRender.Configurer import Configurer
-import Blender
 from Blender import Draw
+
+NetworkRender.debugset()
+from NetworkRender import debug
 
 # Get configuration singleton and read some settings
 configurer = Configurer()

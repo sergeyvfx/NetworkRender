@@ -14,10 +14,11 @@ __history__  =['1.00 2008-10-20, initial version'
                 ]
 
 import NetworkRender
-NetworkRender.debugset()
-from NetworkRender import debug
 
 from Blender import Camera
+
+NetworkRender.debugset()
+from NetworkRender import debug
 
 class PartRenderer:
 	"""

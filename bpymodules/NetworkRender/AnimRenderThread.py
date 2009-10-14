@@ -13,13 +13,15 @@ __version__  ='1.00 2008-10-20'
 __history__  =['1.00 2008-10-20, initial version'
                 ]
 
+import NetworkRender
+
 from NetworkRender.RenderThread import RenderThread
 from NetworkRender.Renderer import Renderer
-import NetworkRender
+
 NetworkRender.debugset()
 from NetworkRender import debug
 
-class AnimRenderThread(RenderThread,Renderer):
+class AnimRenderThread(Renderer):
 	
 	def __init__(self, uri, scenename, context, name, fqueue, squeue, imageType):
 		"""
@@ -40,8 +42,8 @@ class AnimRenderThread(RenderThread,Renderer):
 		@type imageType: int
 		"""
 
-		RenderThread.__init__(self, uri, scenename, context, fqueue, squeue)
-		Renderer.__init__(self, uri,scenename, context, name, imageType)
+		Renderer.__init__(self, uri, scenename, context, name,
+						fqueue, squeue, imageType)
 
 	def _renderFrame(self):
 		debug('%s render started for frame %d'%(self.uri,self.frame))

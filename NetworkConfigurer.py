@@ -12,10 +12,9 @@ __copyright__="(cc) non commercial use only and attribution by"
 __version__ = "0.1"
 __email__ = "g.ulairi@gmail.com"
 
-import Blender
-from Blender import *
+import Blender, NetworkRender
 
-import NetworkRender
+from Blender import *
 from NetworkRender.Configurer import Configurer
 
 No_Event,Event_Quit,Event_Save,Event_Close = range(4)
