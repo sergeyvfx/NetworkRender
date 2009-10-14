@@ -76,6 +76,12 @@ class RenderThread(Thread):
 			except (xmlrpclib.Error, socket.error),e:
 				print 'remote exception caught',e
 				print 'requeueing frame',frame
+
+				# Need this for correct joining to the frame queue
+				# (formally task is done and queue after requeueing of buggy
+				# frame it will be another task)
+				self.frames.task_done()
+
 				self.frames.put(frame)
 				te = time.time()
 				self.stats.put((self.uri, frame, te - ts, 1, 'none'))
