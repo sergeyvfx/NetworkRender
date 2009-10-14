@@ -11,6 +11,7 @@ __copyright__= '(cc) non commercial use only and attribution by'
 __email__    = ['g.ulairi@gmail.com']
 __version__  = '0.1'
 
+import xmlrpclib
 from RenderThread import RenderThread
 from RendererImpl import RendererImpl
 

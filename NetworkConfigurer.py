@@ -99,7 +99,7 @@ def gui():
 
 	configurer.setDrawValue('ServerBufferSize', \
 						Draw.Number("Buffer size: ", No_Event, 10, 12, 160, 15, \
-								configurer.get('ServerBufferSize'), 1024, 524288, \
+								configurer.get('ServerBufferSize'), 1024, 10485760, \
 								"Size of buffer to send data between server and client"))
 
 	configurer.setDrawValue('ServerRenderPath', \
