@@ -44,13 +44,13 @@ class RenderThread(Thread):
 		self.stop = False
 
 	def requestStop(self):
-		this.stop = True
+		self.stop = True
 
 	def serviceAlive(self):
 		"""
 		Check if queue servicing is alive or finished it successfully
 		"""
-		return rt.isAlive() or not rt.failure
+		return self.isAlive() or not self.failure
 
 	def run(self):
 		"""

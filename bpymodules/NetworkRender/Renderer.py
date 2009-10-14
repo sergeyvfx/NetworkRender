@@ -40,17 +40,14 @@ class Renderer(RenderThread, RendererImpl):
 			return False
 
 		if (not self.isLocal()):
-			if (self.rpcserver):
-				try:
-					response = self.rpcserver.ping()
+			try:
+				response = self.rpcserver.ping()
 
-					if (response != 'I am alive'):
-						# Trash is received
-						return False
-				except (xmlrpclib.Error, socket.error), e:
-					print 'remote exception caught while pinging server', e
-			else:
-				# Renderer is not local, but there is no RPC server
+				if (response != 'I am alive'):
+					# Trash is received
+					return False
+			except (xmlrpclib.Error, socket.error), e:
+				print 'remote exception caught while pinging server', e
 				return False
 
 		return True
