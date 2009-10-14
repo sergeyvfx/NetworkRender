@@ -235,8 +235,10 @@ class Render(PartRenderer):
 		s,context.sFrame = context.sFrame,frame
 		e,context.eFrame = context.eFrame,frame
 		oldImagetype = context.imageType
+		oldRenderPath = context.getRenderPath()
 
 		context.imageType = imageType
+		context.setRenderPath(configurer.get('ServerRenderPath'))
 		context.renderAnim()
 		self.result = context.getFrameFilename()
 
@@ -245,6 +247,7 @@ class Render(PartRenderer):
 		# Restore changed settings
 		context.sFrame,context.eFrame = s,e
 		context.imageType = oldImagetype
+		context.setRenderPath(oldRenderPath)
 
 		return 'render finished'
 
@@ -281,10 +284,12 @@ class Render(PartRenderer):
 		e,context.eFrame = context.eFrame,f
 		oldImagetype = context.imageType
 		oldWidth, oldHeight = context.sizeX, context.sizeY
+		oldRenderPath = context.getRenderPath()
 
 		context.imageType = imageType
 		context.sizeX /= self.nparts
 		context.sizeY /= self.nparts
+		context.setRenderPath(configurer.get('ServerRenderPath'))
 		debug('current=%d start=%d end=%d' % (f, context.sFrame, context.eFrame))
 		debug('start render')
 		context.renderPath = self.result
@@ -294,6 +299,7 @@ class Render(PartRenderer):
 		# Restore changed settings
 		context.sFrame,context.eFrame = s,e
 		context.imageType = oldImagetype
+		context.setRenderPath(oldRenderPath)
 		context.sizeX, context.sizeY = oldWidth, oldHeight
 
 		self._resetParam(scn,context)

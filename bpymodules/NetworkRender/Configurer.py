@@ -45,6 +45,7 @@ class Configurer():
 			self.declareVariable('ServerStaticMap', '')
 			self.declareVariable('ServerSecureNets', '')
 			self.declareVariable('ServerBufferSize', 8000)
+			self.declareVariable('ServerRenderPath', '/tmp/')
 
 			self.declareVariable('ClientPort', 8082)
 			self.declareVariable('ClientLocalRendering', True)

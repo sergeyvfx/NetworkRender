@@ -98,9 +98,14 @@ def gui():
 								" (<client>[:<server>] pairs, delimited by comma)"))
 
 	configurer.setDrawValue('ServerBufferSize', \
-						Draw.Number("Buffer size: ", No_Event, 10, 12, 330, 15, \
+						Draw.Number("Buffer size: ", No_Event, 10, 12, 160, 15, \
 								configurer.get('ServerBufferSize'), 1024, 524288, \
 								"Size of buffer to send data between server and client"))
+
+	configurer.setDrawValue('ServerRenderPath', \
+						Draw.String("", No_Event, 180, 12, 160, 15, \
+								configurer.get('ServerRenderPath'), 250, \
+								"Name of directory to save rendered images to"))
 
 # Client configuration
 	Blender.BGL.glColor3f(0,0,0)
